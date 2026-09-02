@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>随机网名生成器</title>
+<style>
+  :root{
+    --bg:#0b0c10;
+    --bg2:#12141b;
+    --panel:#161922;
+    --panel2:#1c2030;
+    --line:#272c3a;
+    --text:#e9ebf2;
+    --muted:#8a90a3;
+    --accent:#7c6cff;
+    --accent2:#22d3ee;
+    --ok:#34d399;
+    --star:#fbbf24;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(124,108,255,.20), transparent 60%),
+      radial-gradient(800px 460px at 92% 4%, rgba(34,211,238,.14), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 20px 80px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:22px;}
+  h1{
+    margin:0 0 6px;
+    font-size:30px;
+    letter-spacing:1px;
+    background:linear-gradient(92deg,#a99bff 0%,#7c6cff 38%,#22d3ee 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .sub{color:var(--muted);font-size:13.5px;}
+
+  /* ---------- panel ---------- */
+  .panel{
+    background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 18px 16px;
+    margin-bottom:18px;
+    backdrop-filter:blur(6px);
+  }
+  .row{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-start;}
+  .field{flex:1 1 320px;min-width:280px;}
+  .label{
+    font-size:12.5px;color:var(--muted);margin-bottom:9px;
+    display:flex;align-items:baseline;gap:8px;letter-spacing:.5px;
+  }
+  .label b{color:var(--text);font-size:15px;font-weight:600;}
+
+  /* ---------- 字数滑块 ---------- */
+  .numline{display:flex;align-items:center;gap:14px;}
+  .bignum{
+    font-size:34px;font-weight:700;line-height:1;
+    min-width:64px;
+    background:linear-gradient(180deg,#fff,#b9c0ff);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    font-variant-numeric:tabular-nums;
+  }
+  .bignum small{font-size:14px;-webkit-text-fill-color:var(--muted);font-weight:500;margin-left:2px;}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    flex:1;height:8px;border-radius:99px;outline:none;cursor:pointer;
+    background:linear-gradient(90deg,var(--accent) 0%,var(--accent2) var(--p,30%),#2b3040 var(--p,30%),#2b3040 100%);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:#fff;border:none;cursor:pointer;
+    box-shadow:0 0 0 4px rgba(124,108,255,.28),0 2px 8px rgba(0,0,0,.5);
+    transition:transform .12s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12);}
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;background:#fff;border:none;cursor:pointer;
+    box-shadow:0 0 0 4px rgba(124,108,255,.28);
+  }
+  .quick{display:flex;gap:6px;margin-top:11px;flex-wrap:wrap;}
+  .quick button{
+    width:32px;height:28px;border-radius:8px;cursor:pointer;
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    font-size:12.5px;font-family:inherit;transition:.14s;padding:0;
+  }
+  .quick button:hover{color:var(--text);border-color:#3a4257;}
+
+  /* ---------- chips ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{
+    padding:6px 12px;border-radius:99px;cursor:pointer;user-select:none;
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    font-size:13px;transition:.15s;white-space:nowrap;
+  }
+  .chip:hover{color:var(--text);border-color:#3b4257;}
+  .chip.on{
+    color:#fff;border-color:transparent;
+    background:linear-gradient(135deg,var(--accent),#5b8cff);
+    box-shadow:0 3px 12px rgba(124,108,255,.32);
+  }
+  .chip.on.alt{background:linear-gradient(135deg,#0ea5e9,var(--accent2));box-shadow:0 3px 12px rgba(34,211,238,.26);}
+
+  /* ---------- 按钮 ---------- */
+  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center;}
+  .btn{
+    padding:11px 22px;border-radius:11px;border:none;cursor:pointer;
+    font-size:14.5px;font-family:inherit;font-weight:600;color:#fff;
+    background:linear-gradient(135deg,var(--accent),#4f7cff 55%,var(--accent2));
+    box-shadow:0 6px 20px rgba(124,108,255,.30);
+    transition:transform .12s,box-shadow .12s,filter .12s;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 9px 26px rgba(124,108,255,.42);}
+  .btn:active{transform:translateY(0) scale(.985);}
+  .btn.ghost{
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    box-shadow:none;font-weight:500;
+  }
+  .btn.ghost:hover{color:var(--text);border-color:#3b4257;box-shadow:none;}
+  .kbd{color:#5d6479;font-size:12px;margin-left:auto;}
+
+  /* ---------- 结果 ---------- */
+  .resulthead{
+    display:flex;align-items:center;gap:12px;margin:22px 0 12px;
+  }
+  .resulthead h2{margin:0;font-size:15px;font-weight:600;letter-spacing:.5px;}
+  .resulthead .cnt{color:var(--muted);font-size:12.5px;}
+  .grid{
+    display:grid;gap:10px;
+    grid-template-columns:repeat(auto-fill,minmax(216px,1fr));
+  }
+  .card{
+    position:relative;
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 38px 12px 14px;
+    cursor:pointer;
+    transition:border-color .15s,transform .15s,background .15s;
+    animation:pop .28s cubic-bezier(.2,.9,.3,1.2) both;
+    overflow:hidden;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98);}to{opacity:1;transform:none;}}
+  .card:hover{border-color:#4a5470;transform:translateY(-2px);background:linear-gradient(180deg,var(--panel2),var(--bg2));}
+  .card .nm{
+    font-size:16.5px;line-height:1.45;word-break:break-all;letter-spacing:.4px;
+  }
+  .card .meta{
+    margin-top:7px;font-size:11.5px;color:#6b7387;
+  }
+  .card .tag{
+    display:inline-block;padding:1px 7px;border-radius:6px;
+    background:rgba(124,108,255,.14);color:#a99bff;font-size:11px;margin-right:6px;
+  }
+  .card .fav{
+    position:absolute;top:9px;right:8px;
+    width:26px;height:26px;border-radius:8px;border:none;cursor:pointer;
+    background:transparent;color:#4d5468;font-size:15px;line-height:1;
+    display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .card .fav:hover{color:var(--star);background:rgba(251,191,36,.12);}
+  .card .fav.on{color:var(--star);}
+  .card.copied{border-color:var(--ok);box-shadow:0 0 0 1px rgba(52,211,153,.35);}
+
+  /* ---------- 收藏 ---------- */
+  .favbar{
+    margin-top:22px;border-top:1px dashed var(--line);padding-top:16px;
+  }
+  .favbar .empty{color:#5d6479;font-size:13px;padding:6px 0 0;}
+  .favlist{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .favlist span{
+    background:var(--panel2);border:1px solid var(--line);border-radius:99px;
+    padding:6px 12px;font-size:13.5px;cursor:pointer;transition:.14s;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .favlist span:hover{border-color:#4a5470;}
+  .favlist span i{font-style:normal;color:#5d6479;font-size:12px;}
+  .favlist span:hover i{color:#f87171;}
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:34px;transform:translate(-50%,16px);
+    background:rgba(20,23,32,.96);border:1px solid var(--line);
+    color:var(--text);padding:10px 20px;border-radius:11px;font-size:13.5px;
+    opacity:0;pointer-events:none;transition:.22s;z-index:99;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0);}
+
+  @media (max-width:560px){
+    body{padding:20px 14px 70px;}
+    h1{font-size:24px;}
+    .grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>随机网名生成器</h1>
+    <div class="sub">字数精确可控 3 - 16 字 · 12 种风格 · 支持收藏与批量导出</div>
+  </header>
+
+  <div class="panel">
+    <div class="row">
+      <div class="field">
+        <div class="label">网名长度 <b id="numShow">6</b> 字</div>
+        <div class="numline">
+          <div class="bignum"><span id="bigNum">6</span><small>字</small></div>
+          <input type="range" id="lenRange" min="3" max="16" step="1" value="6" style="--p:23%">
+        </div>
+        <div class="quick" id="quick"></div>
+      </div>
+
+      <div class="field">
+        <div class="label">风格 <b id="styleShow">全部混合</b></div>
+        <div class="chips" id="styles"></div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:16px">
+      <div class="field">
+        <div class="label">生成数量 <b id="cntShow">12</b> 个</div>
+        <div class="chips" id="counts"></div>
+      </div>
+      <div class="field">
+        <div class="label">装饰（不计入字数）</div>
+        <div class="chips" id="decors"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="genBtn">生成网名</button>
+      <button class="btn ghost" id="copyAll">复制全部</button>
+      <button class="btn ghost" id="downAll">导出 TXT</button>
+      <span class="kbd">空格键 / Enter 快速生成</span>
+    </div>
+  </div>
+
+  <div class="resulthead">
+    <h2>生成结果</h2>
+    <span class="cnt" id="resCnt">点击任意网名即可复制</span>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <div class="favbar">
+    <div class="label" style="margin-bottom:0">我的收藏 <b id="favCnt">0</b></div>
+    <div class="favlist" id="favList"></div>
+    <div class="empty" id="favEmpty">还没有收藏。点击网名右上角的星标即可收藏，数据保存在本地。</div>
+  </div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+/* ENGINE-START — 生成引擎（可独立测试） */
+const LEX = {
+  gu: {
+    label:'古风诗意',
+    head:['墨','清','霜','颜','尘','离','梦','影','风','月','烟','雪','澜','卿','辞','鸢','寒','夜','辰','竹','鹤','笺','故','旧','南','北','云','山','水','一','半','千','万','青衫','白露','烟雨','江南','长安','孤舟','寒江','疏影','暗香','折柳','听雨','煮酒','抚琴','南风','云深','归鸿','秋水','浮生','暮色','苍山','空谷'],
+    body:['清风','明月','落花','流水','青衫','白露','烟雨','江南','长安','故里','孤舟','寒江','疏影','暗香','折柳','听雨','煮酒','抚琴','观棋','南风','云深','归鸿','秋水','浮生','若梦','半城','暮色','苍山','空谷','幽兰','飞花','似雪','惊鸿','不问','不语','无痕','无声','未央','未眠','初见','如故','相思','相忘','故人','山河','岁月','人间','清欢','踏歌','风满楼','花间酒','月如钩','水云间','山外山','云深处','长安夜','故人归','青衫湿','烟波客','扬州梦','少年游','长相思','如梦令','的'],
+    tail:['客','归','辞','行','语','梦','影','心','事','年','序','音','笺','酒','曲','歌','未央','无痕','如初','不语','清欢','故人','归客','行舟','听雨','落笔','惊鸿','如故','未眠','于此','慢慢'],
+    solo:['清风明月','浮生若梦','一蓑烟雨','山河远阔','云深见鹿','雪落无声','月落乌啼','江湖夜雨','桃李春风','满船清梦','烟雨平生','此间少年','风起青萍','白衣卿相','山月不知心底事','温酒叙此生']
+  },
+  wen: {
+    label:'文艺清新',
+    head:['浅','夏','风','暖','鹿','鲸','森','禾','巷','晚','初','小','半','许','等','遇','念','慢','听','看','向','在','与','和','橘子','汽水','海风','山野','微光','清澈','温柔','半夏','南巷','旧梦','余温','慢热','人间','故事','远方','星野','云边'],
+    body:['晚风','初夏','橘子','汽水','海风','山野','微光','清澈','温柔','半夏','南巷','旧梦','余温','慢热','人间','故事','远方','星野','云边','小满','白桃','青柠','薄荷','海盐','日落','黄昏','晨雾','萤火','树影','晴天','细语','约定','期待','喜欢','心动','恰好','慢慢','悄悄','刚好','一点点','橘子味','风微凉','晚安信','月亮岛','云边铺','小春日','慢半拍','森之语','半糖味','南风喃','的'],
+    tail:['呀','呢','吧','哦','岛','信','故事','小屋','日记','清单','来信','计划','日常','时刻','时分','片刻','与你','和你','如约','未完'],
+    solo:['夏日限定','风很温柔','橘子汽水','山野万里','月光温柔','人间烟火','慢慢喜欢','保持热爱','万物可爱','云边有个小卖部','你是人间四月天','风起时想你']
+  },
+  meng: {
+    label:'软萌可爱',
+    head:['小','大','奶','甜','软','糯','嘟','胖','圆','毛','咕','呼','喵','兔','粉','桃','一','超','巨','迷你'],
+    body:['奶盖','布丁','果冻','团子','小鹿','软糖','泡芙','奶昔','麻薯','芋圆','豆豆','肉包','奶凶','呆萌','咕噜','呼噜','喵呜','小熊','兔兔','粉桃','甜甜','棉花','云朵','奶糖','珍珠','芝士','抹茶','草莓','蜜桃','奶黄','椰果','西米','红豆','芋泥','奶芙','啾咪','吧唧','可爱','撒娇','打滚','摇尾','的'],
+    tail:['酱','仔','崽','球','喵','汪','叽','呀','哦','呢','包子','同学','小朋友','小可爱','本尊','大人'],
+    solo:['小可爱','奶盖酱','软乎乎','圆滚滚','咕噜噜','胖嘟嘟','喵小酱','兔叽叽','草莓酱','棉花糖','奶凶奶凶','可可爱爱','甜度满分','今日份甜','小熊软糖','一口一个小朋友']
+  },
+  ba: {
+    label:'霸气游戏',
+    head:['弑','煞','狂','尊','帝','魔','神','龙','霸','灭','绝','刹','傲','独','孤','战','血','暗','雷','天'],
+    body:['狂神','弑天','逆鳞','无双','修罗','孤狼','战魂','破军','龙渊','天煞','至尊','裁决','灭世','焚天','傲天','独尊','剑心','雷霆','苍狼','血影','暗夜','风暴','霸业','千秋','万古','一剑','擎天','九霄','凌云','锋芒','无敌','枭雄','霸主','斩天','镇海','焚天','破晓'],
+    tail:['大人','至尊','无双','天下','苍穹','九天','归来','本座','老祖','之主','无敌','传说'],
+    solo:['一剑霜寒','血染山河','剑指苍穹','唯我独尊','傲视群雄','纵横四海','一统江湖','君临天下','万古长青','气吞山河','踏凌霄','破苍穹','斩星辰','傲九天','镇山河','剑无痕','弑神录','逆天行']
+  },
+  shang: {
+    label:'伤感情绪',
+    head:['凉','旧','逝','空','寂','泪','残','孤','倦','冷','晚','末','无','失','忘','散'],
+    body:['旧巷','空城','孤影','离人','残梦','凉生','逝水','昔年','倦鸟','冷月','孤舟','荒岛','余温','遗憾','落空','陌生','枯叶','晚秋','离歌','断桥','旧梦','残雪','心事','沉默','失眠','独行','远去','落幕','后来','无人','独自','偷偷','慢慢','可惜','终究','还是','的'],
+    tail:['一场','而已','之后','如初','难收','无期','不语','独白','收场','散场','未完','难眠'],
+    solo:['后会无期','空城旧梦','人间失格','孤独患者','无人之境','此去经年','物是人非','曲终人散','一个人的兵荒马乱','后来的我们','旧时光','来不及','空欢喜','独角戏','陌生人']
+  },
+  sha: {
+    label:'沙雕搞笑',
+    head:['猪','狗','摸','躺','摆','菜','憨','铁','二','大','小','老','废','猛','沙'],
+    body:['摸鱼','摆烂','干饭','躺平','划水','废柴','憨憨','菜鸡','沙雕','二哈','秃头','社畜','打工','搬砖','咕咕','旺财','来福','翠花','铁柱','狗剩','二狗','打滚','发呆','摆烂','干啥','整活','整挺好','麻了','寄了','裂开','润了','内卷','摸金','嘿嘿','哈哈','的'],
+    tail:['本人','一号','之王','日常','中','大师','本尊','选手','小队','选手','大师','侠','少年'],
+    solo:['干饭人','打工人','摸鱼怪','摆烂王','废柴酱','菜鸡儿','憨憨熊','秃头侠','社畜君','铁憨憨','大聪明','小机灵','二狗子','只会干饭','专业摸鱼','持续摆烂','躺平大师','沙雕本雕','菜是原罪','一天不干正事','社会毒打']
+  },
+  er: {
+    label:'二次元',
+    head:['超','真','小','大','电','量','赛','星','幻','未','异','魔','机','光','零','初'],
+    body:['星轨','赛博','机甲','光年','次元','幻梦','樱落','夏目','电波','量子','虚拟','数据','代码','像素','霓虹','未来','平行','时空','结界','使魔','爆裂','瞬移','觉醒','变身','羁绊','勇者','公主','骑士','旅人','观测','跃迁','的'],
+    tail:['酱','君','桑','炭','碳','喵','哒','哟','酱酱','大人','选手','玩家','旅人','少年','少女'],
+    solo:['喵帕斯','二次元','电波酱','量子君','赛博酱','机甲君','星轨酱','樱落酱','赛博朋克','星河之旅','次元突破','量子纠缠','时空旅人','虚拟世界','电波少女','平行宇宙']
+  },
+  ji: {
+    label:'极简高冷',
+    head:['无','空','零','非','默','简','冷','白','黑','灰','鹿','鲸','山','海','风','光','影','雾','霜','余'],
+    body:['留白','无名','空白','无声','无念','无相','无色','无我','不语','不争','不问','不言','如初','如一','似水','若风','沉墨','静默','疏离','距离','界限','虚无','孤独','清冷','克制','极简','冷淡','白描','素描','克制','零度','常温','的'],
+    tail:['而已','即可','足矣','如常','未知','未定','半数','之外','之中','之间'],
+    solo:['不想说','无所谓','不解释','没意思','就这样','一个人','安静点','别说话','保持距离','与我无关','无需多言','不必解释','一如既往','风轻云淡','波澜不惊','不动声色']
+  },
+  xian: {
+    label:'仙侠玄幻',
+    head:['剑','仙','道','玄','天','灵','神','魔','妖','九','三','太','上','青','紫','金','幽','冥','虚','无'],
+    body:['凌霄','苍穹','九天','昆仑','蓬莱','蜀山','青云','天机','太虚','紫府','洞天','灵根','道心','剑意','飞升','渡劫','御剑','斩妖','除魔','问天','修真','炼气','筑基','金丹','元婴','化神','长生','不灭','无极','混元','登仙','踏云','执剑','问鼎','的','斩星辰','踏凌霄','破苍穹','傲九天','镇山河','剑无痕','逆天行','问长生','登云巅','斩妖录','仙路远','问苍生'],
+    tail:['道人','真人','上仙','少侠','剑客','道友','散人','仙尊','老祖','天师','剑仙','掌门','行者'],
+    solo:['剑起苍澜','御剑乘风','九天揽月','大道三千','一念永恒','仙路漫漫','长生久视','一剑光寒','问剑苍穹','踏破凌霄','斩尽星辰','九转玄功']
+  },
+  chi: {
+    label:'吃货美食',
+    head:['小','大','胖','甜','酸','辣','香','烤','炸','煮','蒸','冰','热','鲜','爆'],
+    body:['奶茶','火锅','烧烤','串串','烤肉','泡芙','布丁','蛋糕','甜甜圈','冰淇淋','炸鸡','薯条','可乐','雪碧','包子','饺子','面条','米饭','豆浆','油条','煎饼','豆腐','年糕','麻薯','芋圆','蛋挞','曲奇','芝士','抹茶','小龙虾','螺蛳粉','三明治','关东煮','糖葫芦','的'],
+    tail:['控','党','狂魔','达人','爱好者','小王子','公主','少年','少女','师傅','老板','一号','选手'],
+    solo:['今天吃什么','唯有爱与美食','吃饱才有力气','干饭不积极','深夜放毒','一口一个小笼包','奶茶续命中','火锅拯救世界']
+  },
+  zhi: {
+    label:'打工人',
+    head:['打','搬','加','摸','划','秃','社','程','设','产','运','销','甲','乙','丙'],
+    body:['工人','搬砖','加班','摸鱼','划水','需求','上线','复盘','对齐','赋能','抓手','闭环','排期','评审','周报','日报','例会','述职','内卷','优化','裁员','转岗','出差','外派','实习','转正','调薪','年终','的','打工人','搬砖的','加班狗','摸鱼党','划水怪','需求单','周报侠','日报君','例会王','述职会'],
+    tail:['员','侠','君','酱','本人','一号','之王','日常','中','日记','实录','现场'],
+    solo:['摸鱼被抓现场','今日份划水','发际线保卫战','需求又变了','这个需求做不了','下班的诱惑','周报写不完了','会议消灭者','摸鱼被抓','今日划水','需求变更','发际线危','周报难产','会议终结','拒绝内卷','准点下班']
+  }
+};
+
+const LEN_WEIGHT = {1:1.0, 2:3.4, 3:2.8, 4:2.0, 5:1.1, 6:0.7, 7:0.5, 8:0.4};
+
+function clen(s){ return Array.from(String(s)).length; }
+function pick(a){ return a[(Math.random() * a.length) | 0]; }
+
+const _idxCache = {};
+function buildIndex(key){
+  if (_idxCache[key]) return _idxCache[key];
+  const keys = (key === 'all') ? Object.keys(LEX) : [key];
+  const head = [], body = [], tail = [], solo = [];
+  keys.forEach(function(k){
+    const s = LEX[k];
+    if (!s) return;
+    head.push.apply(head, s.head);
+    body.push.apply(body, s.body);
+    tail.push.apply(tail, s.tail);
+    solo.push.apply(solo, s.solo || []);
+  });
+  function bucket(arr){
+    const m = {};
+    arr.forEach(function(w){ const l = clen(w); (m[l] = m[l] || []).push(w); });
+    return m;
+  }
+  // solo 为高质量整词，入池两次以提高权重
+  const all = head.concat(body, tail, solo, solo);
+  const idx = {
+    byLen: bucket(all),
+    headByLen: bucket(head),
+    tailByLen: bucket(tail),
+    soloByLen: bucket(solo)
+  };
+  _idxCache[key] = idx;
+  return idx;
+}
+
+/**
+ * 从分桶中按长度上限挑一个词。
+ * excludeLen 可排除某长度；rem 为剩余字数，剩余越多越偏好长词（避免长名碎片化）。
+ */
+function pickFrom(buckets, maxLen, excludeLen, rem){
+  const lens = [];
+  let total = 0;
+  for (let l = 1; l <= Math.min(maxLen, 8); l++){
+    if (l === excludeLen) continue;
+    if (!buckets[l] || !buckets[l].length) continue;
+    let w = (LEN_WEIGHT[l] || 0.3);
+    if (l >= 3 && rem > 5) w *= 1 + (rem - 5) * 0.35;   // 剩余多时给长词加码
+    w *= buckets[l].length;
+    lens.push([l, w]);
+    total += w;
+  }
+  if (!total) return null;
+  let r = Math.random() * total;
+  for (let i = 0; i < lens.length; i++){
+    r -= lens[i][1];
+    if (r <= 0) return pick(buckets[lens[i][0]]);
+  }
+  return pick(buckets[lens[lens.length - 1][0]]);
+}
+
+/** 尽量挑一个长度恰好为 exact 的词 */
+function pickExact(buckets, exact){
+  return (buckets[exact] && buckets[exact].length) ? pick(buckets[exact]) : null;
+}
+
+/** 词与词之间是否互相包含（避免出现 草莓/草莓酱、影/疏影 这类叠床架屋） */
+function overlaps(parts, w){
+  for (let i = 0; i < parts.length; i++){
+    const p = parts[i];
+    if (p === w || p.indexOf(w) >= 0 || w.indexOf(p) >= 0) return true;
+  }
+  return false;
+}
+
+/** 在给定候选里挑一个“干净”的词：长度合法、不与已选词重复或互相包含 */
+function chooseClean(idx, parts, rem, preferBuckets){
+  for (let t = 0; t < 8; t++){
+    let w = null;
+    if (preferBuckets && Math.random() < 0.7){
+      w = pickFrom(preferBuckets, rem, 0, rem);
+    }
+    if (!w) w = pickFrom(idx.byLen, rem, 0, rem);
+    if (!w) return null;
+    if (clen(w) > rem) continue;
+    if (overlaps(parts, w)) continue;
+    // 避免连续两个单字
+    if (parts.length && clen(parts[parts.length - 1]) === 1 && clen(w) === 1) continue;
+    return w;
+  }
+  return null;
+}
+
+/** 名额紧张时：挑一个长度恰好等于 rem 且干净的词，一次填满 */
+function pickFit(idx, parts, rem){
+  const tail = idx.tailByLen[rem];
+  const all = idx.byLen[rem];
+  if (!tail && !all) return null;
+  for (let t = 0; t < 10; t++){
+    const w = (tail && Math.random() < 0.6) ? pick(tail) : (all ? pick(all) : pick(tail));
+    if (w && !overlaps(parts, w)) return w;
+  }
+  return null;
+}
+
+/** 长名策略：先落一个高质量整词打底，再补齐剩余，减少碎片感 */
+function trySoloFirst(idx, n){
+  if (!idx.soloByLen) return null;
+  const cand = [];
+  for (let l = 3; l <= Math.min(n - 2, 7); l++){
+    if (idx.soloByLen[l]) cand.push.apply(cand, idx.soloByLen[l]);
+  }
+  if (!cand.length) return null;
+  const first = pick(cand);
+  const parts = [first];
+  let rem = n - clen(first);
+  let guard = 0;
+  while (rem > 0 && guard++ < 8){
+    let w = null;
+    if (rem <= 3){
+      w = pickExact(idx.tailByLen, rem) || pickExact(idx.byLen, rem) || null;
+      if (w && overlaps(parts, w)) w = null;
+    }
+    if (!w) w = chooseClean(idx, parts, rem, idx.tailByLen);
+    if (!w) return null;
+    parts.push(w);
+    rem -= clen(w);
+  }
+  return rem === 0 ? parts : null;
+}
+
+function tryGen(idx, n){
+  // 1) 整词精确命中
+  if (Math.random() < 0.42 && idx.byLen[n] && idx.byLen[n].length){
+    return [pick(idx.byLen[n])];
+  }
+  // 2) 长名：整词打底
+  if (n >= 8 && Math.random() < 0.6){
+    const r = trySoloFirst(idx, n);
+    if (r) return r;
+  }
+  // 3) 通用拼接
+  const parts = [];
+  let rem = n;
+  const maxParts = Math.max(2, Math.ceil(n / 2.6));
+  let guard = 0;
+  while (rem > 0 && guard++ < 12){
+    let w = null;
+    if (parts.length >= maxParts - 1 && rem > 1){
+      // 名额快用完：必须一次填满，宁可重来也不拖成碎片
+      w = pickFit(idx, parts, rem);
+      if (!w) return null;
+    } else if (parts.length === 0){
+      w = chooseClean(idx, parts, rem, idx.headByLen);
+    } else if (rem <= 3){
+      w = pickExact(idx.tailByLen, rem);
+      if (!w || overlaps(parts, w)) w = pickExact(idx.byLen, rem);
+      if (!w || overlaps(parts, w)) w = chooseClean(idx, parts, rem, idx.tailByLen);
+    } else {
+      w = chooseClean(idx, parts, rem, null);
+    }
+    if (!w) return null;
+    if (clen(w) > rem) return null;
+    parts.push(w);
+    rem -= clen(w);
+  }
+  return (rem === 0 && parts.length) ? parts : null;
+}
+
+/** 保底：一定凑出精确长度（可能牺牲一点美感，但长度绝不会错） */
+function fallbackGen(idx, n){
+  const parts = [];
+  let rem = n;
+  let guard = 0;
+  while (rem > 0 && guard++ < 40){
+    let w = null;
+    for (let t = 0; t < 6; t++){
+      const c = pickFrom(idx.byLen, rem, 0, rem) || (idx.byLen[rem] ? pick(idx.byLen[rem]) : null);
+      if (!c || clen(c) > rem) break;
+      if (!overlaps(parts, c)){ w = c; break; }
+      if (!w) w = c;
+    }
+    if (w && clen(w) <= rem){ parts.push(w); rem -= clen(w); }
+    else if (rem === 1 && idx.byLen[1] && idx.byLen[1].length){ parts.push(pick(idx.byLen[1])); rem = 0; }
+    else break;
+  }
+  if (rem > 0){
+    // 极端兜底：用单字补足
+    const one = (idx.byLen[1] && idx.byLen[1].length) ? idx.byLen[1] : ['之'];
+    while (rem-- > 0) parts.push(pick(one));
+  }
+  return parts;
+}
+
+/**
+ * 生成一个网名
+ * @param {string} styleKey 风格 key，'all' 表示混合
+ * @param {number} n 目标字数 3-16
+ * @param {Set} [avoid] 需要规避的已有网名
+ * @returns {{name:string, parts:string[], style:string}}
+ */
+function generateOne(styleKey, n, avoid){
+  const idx = buildIndex(styleKey);
+  let parts = null;
+  for (let t = 0; t < 300; t++){
+    // 前 285 次只走高质量路径，实在出不来才动用保底
+    const p = (t < 285) ? tryGen(idx, n) : (tryGen(idx, n) || fallbackGen(idx, n));
+    if (!p) continue;
+    const name = p.join('');
+    if (clen(name) !== n) continue;
+    if (avoid && avoid.has(name)){
+      if (t < 200) continue;
+    }
+    parts = p;
+    break;
+  }
+  if (!parts) parts = fallbackGen(idx, n);
+  return { name: parts.join(''), parts: parts, style: styleKey };
+}
+/* ENGINE-END — 生成引擎结束 */
+
+/* ---------------- 装饰层 ---------------- */
+const WRAPS = [['「','」'],['『','』'],['【','】'],['〖','〗'],['《','》'],['〈','〉'],['（','）'],['﹃','﹄']];
+const DOTS  = ['·','丶','-','_','~','°','•'];
+const TAILS = ['°','々','ღ','☾','✿','❀','✧','☆','♪','♫','❦','༄','✦','❥'];
+const EMOJIS = ['🌙','⭐','🍑','🐳','🦊','🐱','🌸','🍃','❄️','🔥','💫','🌊','🎐','🧊','🍬','☁️','🌿','🐚','🫧','✨','🎀','🦄','🐰','🍭','🧸','🌵','🍄','🐧'];
+const NUMS  = ['1','2','3','7','9','11','13','23','66','77','88','99','100','1314','233','520','666','888','1024','2048'];
+
+function decorate(item, opt){
+  let s = item.parts.join('');
+  if (opt.dot && item.parts.length >= 2){
+    s = item.parts.join(pick(DOTS));
+  }
+  if (opt.wrap){
+    const w = pick(WRAPS);
+    s = w[0] + s + w[1];
+  }
+  if (opt.tailOdd){
+    s = s + pick(TAILS);
+  }
+  if (opt.num){
+    s = s + pick(NUMS);
+  }
+  if (opt.emoji){
+    const e = pick(EMOJIS);
+    s = Math.random() < 0.45 ? (e + s) : (s + e);
+  }
+  return s;
+}
+
+/* ---------------- UI ---------------- */
+const $ = function(id){ return document.getElementById(id); };
+const STYLE_KEYS = Object.keys(LEX);
+const state = {
+  len: 6,
+  count: 12,
+  styles: ['all'],
+  decors: { dot:false, wrap:false, tailOdd:false, num:false, emoji:false }
+};
+const recent = new Set();
+let current = [];
+
+/* 风格 chips */
+(function initStyles(){
+  const box = $('styles');
+  const all = document.createElement('div');
+  all.className = 'chip on';
+  all.textContent = '全部混合';
+  all.dataset.key = 'all';
+  box.appendChild(all);
+  STYLE_KEYS.forEach(function(k){
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.textContent = LEX[k].label;
+    c.dataset.key = k;
+    box.appendChild(c);
+  });
+  box.addEventListener('click', function(e){
+    const c = e.target.closest('.chip');
+    if (!c) return;
+    const k = c.dataset.key;
+    if (k === 'all'){
+      state.styles = ['all'];
+    } else {
+      const i = state.styles.indexOf(k);
+      if (i >= 0){ state.styles.splice(i, 1); }
+      else {
+        if (state.styles[0] === 'all') state.styles = [];
+        state.styles.push(k);
+      }
+      if (!state.styles.length) state.styles = ['all'];
+    }
+    syncStyles();
+  });
+  syncStyles();
+})();
+
+function syncStyles(){
+  Array.prototype.forEach.call($('styles').children, function(c){
+    c.classList.toggle('on', state.styles.indexOf(c.dataset.key) >= 0);
+  });
+  $('styleShow').textContent = state.styles.indexOf('all') >= 0
+    ? '全部混合'
+    : state.styles.map(function(k){ return LEX[k].label; }).join(' / ');
+}
+
+/* 数量 chips */
+(function initCounts(){
+  const box = $('counts');
+  [6, 12, 20, 30, 50].forEach(function(n, i){
+    const c = document.createElement('div');
+    c.className = 'chip' + (n === state.count ? ' on' : '');
+    c.textContent = n + ' 个';
+    c.dataset.n = n;
+    box.appendChild(c);
+  });
+  box.addEventListener('click', function(e){
+    const c = e.target.closest('.chip');
+    if (!c) return;
+    state.count = parseInt(c.dataset.n, 10);
+    $('cntShow').textContent = state.count;
+    Array.prototype.forEach.call(box.children, function(x){
+      x.classList.toggle('on', parseInt(x.dataset.n, 10) === state.count);
+    });
+  });
+})();
+
+/* 装饰 chips */
+(function initDecors(){
+  const defs = [
+    { k:'dot', t:'间隔点缀' },
+    { k:'wrap', t:'符号包裹' },
+    { k:'tailOdd', t:'尾部符号' },
+    { k:'num', t:'数字后缀' },
+    { k:'emoji', t:'Emoji' }
+  ];
+  const box = $('decors');
+  defs.forEach(function(d){
+    const c = document.createElement('div');
+    c.className = 'chip alt';
+    c.textContent = d.t;
+    c.dataset.k = d.k;
+    box.appendChild(c);
+  });
+  box.addEventListener('click', function(e){
+    const c = e.target.closest('.chip');
+    if (!c) return;
+    const k = c.dataset.k;
+    state.decors[k] = !state.decors[k];
+    c.classList.toggle('on', state.decors[k]);
+  });
+})();
+
+/* 快捷字数 */
+(function initQuick(){
+  const box = $('quick');
+  [3,4,5,6,7,8,9,10,12,14,16].forEach(function(n){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = n;
+    b.onclick = function(){ setLen(n); };
+    box.appendChild(b);
+  });
+})();
+
+function setLen(n){
+  state.len = n;
+  const r = $('lenRange');
+  r.value = n;
+  r.style.setProperty('--p', ((n - 3) / 13 * 100) + '%');
+  $('bigNum').textContent = n;
+  $('numShow').textContent = n;
+}
+$('lenRange').addEventListener('input', function(){ setLen(parseInt(this.value, 10)); });
+setLen(6);
+
+/* ---------- 生成 ---------- */
+function generate(){
+  const n = state.len;
+  const cnt = state.count;
+  const out = [];
+  const batch = new Set();
+  for (let i = 0; i < cnt; i++){
+    const styleKey = pick(state.styles);
+    const item = generateOne(styleKey, n, recent);
+    const shown = decorate(item, state.decors);
+    if (batch.has(shown)){ i--; if (out.length > cnt * 3) break; continue; }
+    batch.add(shown);
+    recent.add(item.name);
+    out.push({ raw: item.name, shown: shown, style: styleKey === 'all' ? guessStyle(item) : LEX[styleKey].label });
+  }
+  if (recent.size > 800) recent.clear();
+  current = out;
+  render(out);
+}
+
+function guessStyle(item){
+  // 依据首个词反查风格，用于展示标签
+  const first = item.parts[0];
+  for (let i = 0; i < STYLE_KEYS.length; i++){
+    const s = LEX[STYLE_KEYS[i]];
+    if (s.head.indexOf(first) >= 0 || s.body.indexOf(first) >= 0) return s.label;
+  }
+  return '混合';
+}
+
+function render(list){
+  const grid = $('grid');
+  grid.innerHTML = '';
+  list.forEach(function(it, i){
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.animationDelay = Math.min(i * 22, 500) + 'ms';
+    card.title = '点击复制';
+
+    const nm = document.createElement('div');
+    nm.className = 'nm';
+    nm.textContent = it.shown;
+    card.appendChild(nm);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = it.style;
+    meta.appendChild(tag);
+    meta.appendChild(document.createTextNode(clen(it.raw) + ' 字'));
+    card.appendChild(meta);
+
+    const fav = document.createElement('button');
+    fav.className = 'fav';
+    fav.type = 'button';
+    fav.textContent = '★';
+    fav.title = '收藏';
+    if (isFav(it.shown)) fav.classList.add('on');
+    fav.onclick = function(e){
+      e.stopPropagation();
+      toggleFav(it.shown);
+      fav.classList.toggle('on', isFav(it.shown));
+    };
+    card.appendChild(fav);
+
+    card.onclick = function(){
+      copy(it.shown);
+      card.classList.add('copied');
+      setTimeout(function(){ card.classList.remove('copied'); }, 500);
+    };
+    grid.appendChild(card);
+  });
+  $('resCnt').textContent = '共 ' + list.length + ' 个 · 点击任意网名即可复制';
+}
+
+/* ---------- 剪贴板 / 导出 ---------- */
+function copy(text){
+  const done = function(){ toast('已复制：' + text); };
+  if (navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done, function(){ legacyCopy(text, done); });
+  } else {
+    legacyCopy(text, done);
+  }
+}
+function legacyCopy(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); done(); }
+  catch (e) { toast('复制失败，请手动选择'); }
+  document.body.removeChild(ta);
+}
+
+$('copyAll').onclick = function(){
+  if (!current.length) return toast('还没有生成任何网名');
+  copy(current.map(function(x){ return x.shown; }).join('\n'));
+};
+$('downAll').onclick = function(){
+  if (!current.length) return toast('还没有生成任何网名');
+  const text = current.map(function(x, i){ return (i + 1) + '. ' + x.shown; }).join('\n');
+  const blob = new Blob(['\ufeff' + text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '网名_' + state.len + '字_' + current.length + '个.txt';
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  toast('已导出 ' + current.length + ' 个网名');
+};
+$('genBtn').onclick = generate;
+
+/* ---------- 收藏 ---------- */
+const FAV_KEY = 'wangming_fav_v1';
+function getFav(){
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function saveFav(list){
+  try { localStorage.setItem(FAV_KEY, JSON.stringify(list)); } catch (e) {}
+}
+function isFav(name){ return getFav().indexOf(name) >= 0; }
+function toggleFav(name){
+  const list = getFav();
+  const i = list.indexOf(name);
+  if (i >= 0){ list.splice(i, 1); toast('已取消收藏'); }
+  else { list.unshift(name); toast('已收藏：' + name); }
+  if (list.length > 200) list.length = 200;
+  saveFav(list);
+  renderFav();
+}
+function renderFav(){
+  const list = getFav();
+  const box = $('favList');
+  box.innerHTML = '';
+  $('favCnt').textContent = list.length;
+  $('favEmpty').style.display = list.length ? 'none' : '';
+  list.forEach(function(name){
+    const s = document.createElement('span');
+    s.textContent = name;
+    s.title = '点击复制';
+    s.onclick = function(e){
+      if (e.target.tagName === 'I'){ toggleFav(name); return; }
+      copy(name);
+    };
+    const x = document.createElement('i');
+    x.textContent = '×';
+    s.appendChild(x);
+    box.appendChild(s);
+  });
+}
+renderFav();
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 1500);
+}
+
+/* ---------- 快捷键 ---------- */
+document.addEventListener('keydown', function(e){
+  if (e.target.tagName === 'INPUT' && e.target.type === 'range') return;
+  if (e.code === 'Space' || e.code === 'Enter'){
+    e.preventDefault();
+    generate();
+  }
+});
+
+/* 首屏 */
+generate();
+</script>
+</body>
+</html>
